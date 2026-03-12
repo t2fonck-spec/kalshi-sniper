@@ -38,4 +38,5 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           timeout_minutes: "60"
-          direct_prompt: ${{ github.event_name == 'pull_request' && 'Review this PR. Focus on bugs, security issues, and logic errors. Be concise.' || '' }}
+          allow_edits: true
+          direct_prompt: ${{ github.event_name == 'pull_request' && 'Review this PR. Focus on bugs, security issues, and logic errors. Fix any issues you find.' || '' }}
