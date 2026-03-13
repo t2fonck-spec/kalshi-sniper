@@ -363,12 +363,239 @@
     .layout { grid-template-columns: 1fr; }
     .right-panel { display: none; }
   }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    position: sticky;
+    top: 45px;
+    z-index: 99;
+  }
+
+  .tab {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active[data-tab="kalshi"] { color: var(--purple); border-bottom-color: var(--purple); }
+  .tab.active[data-tab="arbs"] { color: var(--green); border-bottom-color: var(--green); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Scan Now button */
+  .scan-btn {
+    background: rgba(166,227,161,0.1);
+    border: 1px solid rgba(166,227,161,0.3);
+    color: var(--green);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .scan-btn:hover { background: rgba(166,227,161,0.2); }
+  .scan-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .scan-btn.scanning { animation: pulse 1.5s infinite; }
+
+  /* Arb grid */
+  .arb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    min-height: calc(100vh - 142px);
+  }
+
+  .arb-empty {
+    grid-column: 1 / -1;
+    padding: 60px 30px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    background: var(--bg);
+  }
+
+  /* Arb card */
+  .arb-card {
+    background: var(--surface);
+    padding: 20px 24px;
+    position: relative;
+    animation: arbCardIn 0.4s ease-out both;
+  }
+
+  .arb-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--green);
+    box-shadow: 0 0 12px rgba(166,227,161,0.3);
+  }
+
+  .arb-card.tier-high::before {
+    width: 4px;
+    box-shadow: 0 0 20px rgba(166,227,161,0.5);
+  }
+
+  .arb-card.tier-high {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(166,227,161,0.04) 100%);
+  }
+
+  @keyframes arbCardIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .arb-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .arb-event-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .arb-event-meta {
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sport-badge {
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: rgba(137,180,250,0.1);
+    color: var(--blue);
+    border: 1px solid rgba(137,180,250,0.2);
+  }
+
+  .arb-profit {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: 16px;
+  }
+
+  .arb-profit-pct {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--green);
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+
+  .arb-profit-pct::after {
+    content: '%';
+    font-size: 12px;
+    font-weight: normal;
+    opacity: 0.6;
+  }
+
+  .arb-profit-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  .arb-profit-usd {
+    font-size: 12px;
+    color: var(--green);
+    margin-top: 2px;
+  }
+
+  /* Arb bets table */
+  .arb-bets {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .arb-bets-header {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 0.7fr 0.7fr;
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.2);
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .arb-bet-row {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 0.7fr 0.7fr;
+    padding: 6px 10px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .arb-bet-row:last-child { border-bottom: none; }
+  .arb-bet-row:hover { background: rgba(166,227,161,0.04); }
+
+  .arb-bet-outcome { font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .arb-bet-book { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .arb-bet-odds { color: var(--teal); font-weight: 500; text-align: right; }
+  .arb-bet-stake { color: var(--text); font-weight: 500; text-align: right; }
+
+  /* Arb profit bar */
+  .arb-bar-wrap {
+    margin-top: 12px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .arb-bar {
+    height: 100%;
+    background: linear-gradient(90deg, rgba(166,227,161,0.6), var(--green));
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(166,227,161,0.3);
+  }
+
+  @media (max-width: 540px) {
+    .arb-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">0x<span>Sniper</span> │ Kalshi Arb</div>
+  <div class="logo">0x<span>Sniper</span></div>
   <div style="display:flex;align-items:center;gap:12px;">
     <span style="font-size:11px;color:var(--muted);">
       <span class="conn-dot" id="connDot"></span><span id="connLabel">Connecting…</span>
@@ -377,6 +604,12 @@
   </div>
 </header>
 
+<nav class="tab-bar" id="tabBar">
+  <button class="tab active" data-tab="kalshi" onclick="switchTab('kalshi')">Kalshi</button>
+  <button class="tab" data-tab="arbs" onclick="switchTab('arbs')">Sports Arbs</button>
+</nav>
+
+<div class="tab-content active" id="tab-kalshi">
 <div class="stats-bar">
   <div class="stat">
     <div class="stat-label">Balance (USDC)</div>
@@ -446,11 +679,52 @@
     <div class="log-panel" id="logPanel"></div>
   </div>
 </div>
+</div>
+
+<div class="tab-content" id="tab-arbs">
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-label">Events Scanned</div>
+      <div class="stat-value neutral" id="arbStatEvents">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Opportunities</div>
+      <div class="stat-value neutral" id="arbStatOpps">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Stake</div>
+      <div class="stat-value neutral" id="arbStatStake">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Last Scan</div>
+      <div class="stat-value neutral" id="arbStatScan">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Quota Left</div>
+      <div class="stat-value neutral" id="arbStatQuota">—</div>
+    </div>
+    <div class="stat" style="display:flex;align-items:center;justify-content:center;">
+      <button class="scan-btn" id="scanNowBtn" onclick="requestArbScan()">Scan Now</button>
+    </div>
+  </div>
+
+  <div class="arb-grid" id="arbGrid">
+    <div class="arb-empty" id="arbEmpty">No arbitrage opportunities found</div>
+  </div>
+</div>
 
 <script>
   // --- WebSocket connection ---
   let ws, reconnectTimer;
   const MAX_LOG = 100;
+
+  // --- Tab system ---
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+  }
 
   function connect() {
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -469,6 +743,8 @@
       else if (type === 'trade') prependTrade(data);
       else if (type === 'error') log(data.message, 'error');
       else if (type === 'alert') log(data.message, 'alert');
+      else if (type === 'arb_state') renderArbState(data);
+      else if (type === 'arb_scan_rejected') handleArbScanRejected(data);
     };
 
     ws.onclose = () => {
@@ -624,12 +900,130 @@
 
   // Update relative times every 10s
   setInterval(() => {
-    document.querySelectorAll('.trade-time').forEach((el) => {
-      // times are static text for now — refresh via WS state
-    });
     const scanEl = document.getElementById('statScan');
     if (window._lastScanAt) scanEl.textContent = relTime(window._lastScanAt);
+    if (_arbLastScan) setText('arbStatScan', relTime(_arbLastScan));
   }, 10000);
+
+  // --- Arb Scanner ---
+  let _arbLastScan = null;
+
+  function renderArbState(s) {
+    // Hide arb tab if not enabled
+    const arbTab = document.querySelector('.tab[data-tab="arbs"]');
+    if (arbTab && s.enabled === false) { arbTab.style.display = 'none'; return; }
+
+    setText('arbStatEvents', s.eventsScanned || 0);
+    const opps = (s.arbs || []).length;
+    const oppsEl = document.getElementById('arbStatOpps');
+    if (oppsEl) { oppsEl.textContent = opps; oppsEl.className = 'stat-value ' + (opps > 0 ? 'positive' : 'neutral'); }
+    setText('arbStatStake', s.arbs && s.arbs[0] ? `$${s.arbs[0].stake || 100}` : '$100');
+    _arbLastScan = s.lastScanAt;
+    setText('arbStatScan', s.lastScanAt ? relTime(s.lastScanAt) : 'Never');
+    setText('arbStatQuota', s.quotaRemaining !== null ? s.quotaRemaining : '—');
+
+    // Scan button state
+    const btn = document.getElementById('scanNowBtn');
+    if (btn) {
+      btn.disabled = s.scanning;
+      btn.textContent = s.scanning ? 'Scanning...' : 'Scan Now';
+      btn.className = 'scan-btn' + (s.scanning ? ' scanning' : '');
+    }
+
+    // Error display
+    if (s.lastError) {
+      log(`[Arb] ${s.lastError}`, 'error');
+    }
+
+    renderArbCards(s.arbs || []);
+  }
+
+  function renderArbCards(arbs) {
+    const grid = document.getElementById('arbGrid');
+    const empty = document.getElementById('arbEmpty');
+    if (!arbs.length) {
+      grid.innerHTML = '';
+      grid.appendChild(empty || createArbEmpty());
+      return;
+    }
+
+    const maxProfit = 60;
+    grid.innerHTML = arbs.map((arb, i) => {
+      const tier = arb.profitPct >= 10 ? 'tier-high' : '';
+      const barWidth = Math.min((arb.profitPct / maxProfit) * 100, 100);
+      const time = arb.commence ? formatCommenceTime(arb.commence) : '';
+
+      const betsHtml = Object.entries(arb.bets).map(([name, b]) => `
+        <div class="arb-bet-row">
+          <span class="arb-bet-outcome">${esc(name)}</span>
+          <span class="arb-bet-book">${esc(b.book)}</span>
+          <span class="arb-bet-odds">${b.odds.toFixed(3)}</span>
+          <span class="arb-bet-stake">$${b.stake.toFixed(2)}</span>
+        </div>
+      `).join('');
+
+      return `
+        <div class="arb-card ${tier}" style="animation-delay:${i * 0.06}s">
+          <div class="arb-card-top">
+            <div>
+              <div class="arb-event-name">${esc(arb.event)}</div>
+              <div class="arb-event-meta">
+                <span class="sport-badge">${esc(arb.sport)}</span>
+                <span>${time}</span>
+              </div>
+            </div>
+            <div class="arb-profit">
+              <div class="arb-profit-pct">${arb.profitPct.toFixed(2)}</div>
+              <div class="arb-profit-label">Guaranteed</div>
+              <div class="arb-profit-usd">+$${arb.profitUsd.toFixed(2)}</div>
+            </div>
+          </div>
+          <div class="arb-bets">
+            <div class="arb-bets-header">
+              <span>Outcome</span><span>Book</span><span style="text-align:right">Odds</span><span style="text-align:right">Stake</span>
+            </div>
+            ${betsHtml}
+          </div>
+          <div class="arb-bar-wrap">
+            <div class="arb-bar" style="width:${barWidth}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function createArbEmpty() {
+    const div = document.createElement('div');
+    div.className = 'arb-empty';
+    div.id = 'arbEmpty';
+    div.textContent = 'No arbitrage opportunities found';
+    return div;
+  }
+
+  function formatCommenceTime(iso) {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) +
+        ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    } catch { return iso; }
+  }
+
+  function requestArbScan() {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'arb_scan' }));
+      const btn = document.getElementById('scanNowBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Scanning...'; btn.className = 'scan-btn scanning'; }
+    }
+  }
+
+  function handleArbScanRejected(data) {
+    const btn = document.getElementById('scanNowBtn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Scan Now'; btn.className = 'scan-btn'; }
+    if (data.reason === 'cooldown' && data.nextAvailableAt) {
+      const secs = Math.ceil((data.nextAvailableAt - Date.now()) / 1000);
+      log(`[Arb] Scan cooldown — try again in ${secs}s`, 'warn');
+    }
+  }
 
   connect();
 </script>
