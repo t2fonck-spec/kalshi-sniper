@@ -14,6 +14,8 @@ const axios = require('axios');
 const crypto = require('crypto');
 const fs = require('fs');
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 const BASE = 'https://api.elections.kalshi.com/trade-api/v2';
 
 // Mimic a real browser to avoid CloudFront WAF blocks
@@ -134,12 +136,34 @@ class KalshiClient {
 
   /**
    * Fetch all open markets (binary YES/NO contracts).
-   * Paginates automatically.
    */
   async fetchMarkets({ limit = 200 } = {}) {
     const params = { limit, status: 'open' };
     const data = await this._get('/markets', params);
     return data.markets || [];
+  }
+
+  /**
+   * Fetch markets across a curated list of series tickers.
+   * Far more effective than the default /markets endpoint which returns KXMVE junk.
+   */
+  async fetchMarketsBySeries(seriesList, { maxPerSeries = 200, delayMs = 250 } = {}) {
+    const allMarkets = [];
+    for (const series of seriesList) {
+      try {
+        let cursor = '';
+        do {
+          const params = { limit: maxPerSeries, status: 'open', series_ticker: series };
+          if (cursor) params.cursor = cursor;
+          const data = await this._get('/markets', params);
+          const ms = data.markets || [];
+          allMarkets.push(...ms);
+          cursor = data.cursor || '';
+        } while (cursor && allMarkets.length < 2000);
+      } catch { /* skip series on error */ }
+      await sleep(delayMs);
+    }
+    return allMarkets;
   }
 
   /**
@@ -161,8 +185,8 @@ class KalshiClient {
     const bestAsk = market.yes_ask || 99;
     const spread = bestAsk - bestBid;
     const midpoint = (bestBid + bestAsk) / 2;
-    // Approximate liquidity from open interest and volume
-    const liquidity = (market.open_interest || 0) * (midpoint / 100);
+    // Use 24h volume as liquidity proxy (open_interest is often 0 in API response)
+    const liquidity = (market.volume_24h || market.volume || 0) * (midpoint / 100);
 
     return {
       ticker: market.ticker,

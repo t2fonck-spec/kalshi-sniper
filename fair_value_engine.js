@@ -74,16 +74,19 @@ Return this exact JSON:
     const stream = await client.messages.stream({
       model: 'claude-opus-4-6',
       max_tokens: 4096,
-      thinking: { type: 'adaptive' },
+      thinking: { type: 'enabled', budget_tokens: 2000 },
       tools: [{ type: 'web_search_20260209', name: 'web_search' }],
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     });
 
     const response = await stream.finalMessage();
-    const textBlock = response.content.find((b) => b.type === 'text');
-    const rawText = (textBlock?.text || '{}').trim();
-    const jsonText = rawText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    // Use the LAST text block — earlier blocks are often tool-use narration
+    const textBlocks = response.content.filter((b) => b.type === 'text');
+    const rawText = (textBlocks[textBlocks.length - 1]?.text || '{}').trim();
+    // Extract JSON object robustly — strip markdown fences and any surrounding prose
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    const jsonText = jsonMatch ? jsonMatch[0] : '{}';
     const parsed = JSON.parse(jsonText);
 
     const fairValue = Math.max(0.01, Math.min(0.99, parsed.fairValue || 0.5));

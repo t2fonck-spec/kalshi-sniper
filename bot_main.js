@@ -79,33 +79,66 @@ function kellyBet(fairValue, priceFrac, balance) {
   return Math.min(halfKelly * balance, balance * MAX_BET_PCT);
 }
 
+// Curated series to scan — these have real two-sided quotes unlike the KXMVE junk
+// that floods the default /markets endpoint
+const SCAN_SERIES = [
+  // Crypto
+  'KXBTC', 'KXETH',
+  // Macro / Economic
+  'KXFED', 'KXFEDDECISION', 'KXCPI', 'KXINFL', 'KXGDP', 'KXUNRATE', 'KXPCE',
+  // Equities / Commodities
+  'KXSPY', 'KXQQQ', 'KXGOLD', 'KXSILVER', 'KXOIL', 'KXETF',
+  // Sports (daily resolution)
+  'KXNBA', 'KXNFL', 'KXMLB', 'KXNHL', 'KXMMA', 'KXSOCCER', 'KXTENNIS',
+  // Politics / World events
+  'KXHOUSERACE', 'KXELECTION', 'KXTRUMP', 'KXPOLITICS', 'KXFEDDECISION',
+  // Other popular
+  'KXEARTHQUAKECALIFORNIA', 'KXWEATHER', 'KXNEWPOPE', 'KXGOVTCUTS',
+];
+
 // --- Scout ---
 async function scout() {
-  const markets = await kalshi.fetchMarkets({ limit: 300 });
+  console.log(`[Scout] Scanning ${SCAN_SERIES.length} series...`);
+  const markets = await kalshi.fetchMarketsBySeries(SCAN_SERIES, { delayMs: 200 });
+  console.log(`[Scout] Fetched ${markets.length} markets total`);
 
-  // Use market's own yes_bid/yes_ask for fast pre-screening — no extra HTTP calls
   const viable = markets
     .filter((m) => {
+      if (m.market_type !== 'binary') return false;
       const bid = m.yes_bid || 0;
       const ask = m.yes_ask || 0;
+      if (bid <= 0 || ask <= 0) return false;
       const spread = ask - bid;
       const mid = (bid + ask) / 2;
-      const hasPrice = bid > 0 && ask > 0 && mid > 1 && mid < 99;
-      const tightSpread = spread <= 20;
-      const hasActivity = (m.volume || 0) > 0 || (m.open_interest || 0) > 0;
-      return hasPrice && tightSpread && hasActivity;
+      return mid > 1 && mid < 99 && spread <= 25;
     })
     .map((m) => ({ market: m, ob: kalshi.marketToOrderBook(m) }));
 
-  console.log(`[Scout] ${markets.length} markets → ${viable.length} viable (priced + active)`);
+  console.log(`[Scout] ${viable.length} viable (binary, priced, tight spread)`);
   return viable;
 }
+
+const MAX_ANALYZE_PER_CYCLE = parseInt(process.env.MAX_ANALYZE || '10', 10);
 
 // --- Analyst ---
 async function analyze(viable) {
   const analyzed = [];
 
-  for (const { market, ob } of viable) {
+  // Pre-screen: sort by 24h volume descending, take top N for LLM analysis
+  // This avoids burning Claude API budget on illiquid tail markets
+  const prescreened = prescreen(viable.map(v => v.market), viable.map(v => v.ob), {
+    minLiquidity: 0,  // use volume sort instead
+    maxSpread: 20,
+  });
+
+  const toAnalyze = viable
+    .filter(({ ob }) => ob.spread <= 20)
+    .sort((a, b) => (b.market.volume_24h || 0) - (a.market.volume_24h || 0))
+    .slice(0, MAX_ANALYZE_PER_CYCLE);
+
+  console.log(`[Analyst] Analyzing top ${toAnalyze.length} markets by 24h volume (${viable.length} viable total)`);
+
+  for (const { market, ob } of toAnalyze) {
     try {
       const analysis = await analyzeMarket(market, ob);
       const entry = {
@@ -130,7 +163,7 @@ async function analyze(viable) {
       else state.markets.unshift(entry);
       broadcast('market_update', entry);
 
-      await sleep(250);
+      await sleep(500);
     } catch (err) {
       console.error(`[Analyst] ${market.ticker}: ${err.message}`);
     }
